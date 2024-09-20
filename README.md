@@ -1,10 +1,10 @@
 # Developer's Bible: Triggering Data Fixtures in Spring with Faker
 
-This guide walks you through creating a service and controller in a Spring Boot application to generate random fixture data for your MongoDB collections using the **Faker** library. This example demonstrates how to generate random student data and expose it through a REST API.
+This guide walks you through creating a service and controller in a Spring Boot application to generate random fixture data for your MongoDB collections using the [Faker](https://github.com/DiUS/java-faker) library. This example demonstrates how to generate random student data and expose it through a REST API.
 
 ## 1. Install Faker in the POM.xml
 
-You will need to install the following library called [Faker]() which is used to create random data.
+You will need to install the following library called [Faker](https://github.com/DiUS/java-faker) which is used to create random data.
 
 ```xml
 <dependency>
