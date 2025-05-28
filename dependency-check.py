@@ -1,20 +1,24 @@
 import sys
 import xml.etree.ElementTree as ET
+from datetime import datetime
+
+# Set enforcement date
+ENFORCEMENT_DATE = datetime(2025, 6, 6)
 
 def check_dependency_versions(pom_path, expected_deps):
     """
-    Args:
-        pom_path (str): Path to pom.xml
-        expected_deps (dict): Mapping of (groupId, artifactId) -> expected_version
+    Parses pom.xml and checks dependency versions with:
+    - Exact match (if version is specified)
+    - Presence check (if version is None)
+    Includes date-based enforcement for mismatches.
     """
     try:
         tree = ET.parse(pom_path)
         root = tree.getroot()
-
-        # Handle namespaces
         ns = {'mvn': 'http://maven.apache.org/POM/4.0.0'}
 
         found_versions = {}
+
         for dependency in root.findall(".//mvn:dependency", ns):
             group_id = dependency.find("mvn:groupId", ns)
             artifact_id = dependency.find("mvn:artifactId", ns)
@@ -26,27 +30,47 @@ def check_dependency_versions(pom_path, expected_deps):
                     found_versions[key] = version.text if version is not None else None
 
         mismatches = []
+
         for key, expected_version in expected_deps.items():
             actual_version = found_versions.get(key)
-            if actual_version != expected_version:
-                mismatches.append((key, expected_version, actual_version))
+
+            # Case 1: Expected exact version
+            if expected_version is not None:
+                if actual_version != expected_version:
+                    mismatches.append((key, expected_version, actual_version))
+
+            # Case 2: Expected to exist but version doesn't matter
+            else:
+                if actual_version is None:
+                    mismatches.append((key, "any", "missing"))
 
         if mismatches:
-            for (group_id, artifact_id), expected, actual in mismatches:
-                print(f"❌ Mismatch for {group_id}:{artifact_id} - Expected: {expected}, Found: {actual}")
-            sys.exit(1)
+            today = datetime.today()
+            if today >= ENFORCEMENT_DATE:
+                for (group_id, artifact_id), expected, actual in mismatches:
+                    print(f"❌ Mismatch for {group_id}:{artifact_id} - Expected: {expected}, Found: {actual}")
+                sys.exit(1)
+            else:
+                for (group_id, artifact_id), expected, actual in mismatches:
+                    print(f"⚠️  Warning: {group_id}:{artifact_id} - Expected: {expected}, Found: {actual}")
+                print(f"⚠️  These mismatches will cause failure after {ENFORCEMENT_DATE.date()}")
+                sys.exit(0)
 
-        print("✅ All dependency versions match.")
+        print("✅ All dependency versions match or are present.")
         sys.exit(0)
 
     except Exception as e:
-        print(f"Error parsing pom.xml: {e}")
+        print(f"❌ Error parsing pom.xml: {e}")
         sys.exit(2)
 
-# === Example Usage ===
-if __name__ == "__main__":
-    expected_dependencies = {
-        ("org.springframework.boot", "spring-boot-starter-web"): "3.2.1",
-        ("com.example", "my-library"): "1.0.0"
-    }
-    check_dependency_versions("pom.xml", expected_dependencies)
+
+# === Define expected dependencies ===
+# - Specify version string for exact match
+# - Use None if version does not matter (presence only)
+expected_dependencies = {
+    ("org.springframework.boot", "spring-boot-starter-web"): "3.2.1",
+    ("com.example", "optional-lib"): None
+}
+
+# Run the check
+check_dependency_versions("pom.xml", expected_dependencies)
