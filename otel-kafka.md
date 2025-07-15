@@ -1,89 +1,49 @@
-Yes — you can **specifically enable SLF4J (backed by Logback or Log4j2) debug logging** for just your library by setting a log level for **your library’s package** in `application.yml` or `application.properties`.
+Perfect — in that case, you don’t need a full standalone Markdown doc. Instead, you can add a **Kafka-specific section** to your existing library documentation.
+
+Here’s a concise, drop-in **section** you can paste into your existing `README.md` or internal handbook:
 
 ---
 
-## ✅ Step-by-step: Enable Debug Logging for Your Library
+### 📦 Kafka Tracing Properties
 
-### 1. ✅ Set your logger name based on your **package structure**
+If your service uses Kafka, the library provides auto-configuration to enable OpenTelemetry tracing for both **producer** and **consumer** sides. These settings are **optional** and default to enabled when Kafka is present.
 
-Suppose your library is under:
+| Property                      | Default | Description                                                             |
+| ----------------------------- | ------- | ----------------------------------------------------------------------- |
+| `otel.kafka.enabled`          | `true`  | Master switch to enable/disable all Kafka tracing logic.                |
+| `otel.kafka.producer.enabled` | `true`  | Enables the Kafka **producer** interceptor. Requires `ProducerFactory`. |
+| `otel.kafka.consumer.enabled` | `true`  | Enables the Kafka **consumer** interceptor. Requires `ConsumerFactory`. |
 
-```java
-package com.yourcompany.telemetry.kafka;
-```
-
-You can enable DEBUG logging just for that package:
-
-### ➤ In `application.yml`:
+#### 🧪 Example YAML
 
 ```yaml
-logging:
-  level:
-    com.yourcompany.telemetry.kafka: DEBUG
+otel:
+  kafka:
+    enabled: true
+    producer:
+      enabled: true
+    consumer:
+      enabled: false
 ```
 
-### ➤ Or in `application.properties`:
+#### 💡 Notes
 
-```properties
-logging.level.com.yourcompany.telemetry.kafka=DEBUG
-```
+* Interceptors are only registered if Kafka is present **and** the appropriate factory beans (`ProducerFactory`, `ConsumerFactory`) exist.
+* This library marks Kafka as an **optional dependency**, so apps must explicitly include `kafka-clients`.
+* Tracing spans will only emit if OpenTelemetry is enabled and correctly configured.
+* Logs will indicate when Kafka tracing is active:
+
+  ```text
+  [OTEL] Kafka producer interceptor is enabled
+  [OTEL] Kafka record interceptor is enabled
+  ```
 
 ---
 
-### 2. 🔍 What This Does
+You can place this under a heading like:
 
-This will:
-
-* Set the log level to `DEBUG` **only for classes in that package**
-* Leave the rest of your application logs (e.g. Spring Boot, Kafka client, OTEL SDK) at their default levels (e.g. `INFO` or `WARN`)
-* Work across any Spring Boot app that imports your library
-
----
-
-### 3. ✅ Bonus: Make Sure You're Using SLF4J in Your Library
-
-In your library:
-
-```java
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class OtelKafkaTracingAutoConfiguration {
-    private static final Logger log = LoggerFactory.getLogger(OtelKafkaTracingAutoConfiguration.class);
-
-    public void someMethod() {
-        log.debug("Registering Kafka interceptor for OTEL");
-    }
-}
+```
+## Kafka Integration (Optional)
 ```
 
-As long as you use SLF4J, this will work with whatever backend (Logback, Log4j2) the consuming app is using.
-
----
-
-### 🧪 Optional: Add Logging to Confirm Activation
-
-You can also do:
-
-```java
-@PostConstruct
-public void debugActivation() {
-    log.debug("[OTEL-KAFKA] Auto-configuration loaded and active");
-}
-```
-
----
-
-### ✅ TL;DR
-
-To debug **only your library**, set:
-
-```yaml
-logging:
-  level:
-    com.yourcompany.telemetry.kafka: DEBUG
-```
-
-No need to touch global log level or add custom logger config.
-
-Let me know if you want a temporary toggleable flag (e.g. `otel.debug=true`) to control log level programmatically.
+Let me know if you'd like this formatted as a collapsible section, or tailored to a specific documentation site or style (e.g. Docusaurus, AsciiDoc).
