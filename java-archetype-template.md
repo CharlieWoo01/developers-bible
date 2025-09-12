@@ -262,3 +262,121 @@ mvn spring-boot:run
 # 7) Optional: Catalog + GitLab pipeline
 
 * **Catalog:** Some orgs host an `archetype-catalog.xml` in Nexus/Artifactory so `-DarchetypeCatalog=internal` lists your archetypes. Nice-to-have, not required.
+
+# 8) Add README.md
+
+```markdown
+Here’s a **starter `README.md`** you can drop into your archetype repo (`spring-boot-rest-poc-archetype/`).
+It explains what it is, how to build, deploy, and consume it with examples.
+
+---
+
+````markdown
+# Spring Boot REST POC Archetype 🚀
+
+A reusable **Maven archetype** that generates a minimal Spring Boot REST application.  
+The generated project includes:
+
+- A ready-to-run **Spring Boot** app
+- An example **REST controller** with configurable name, path, and message
+- A clean project structure with `Application.java` and `application.properties`
+
+---
+
+## 📦 Build & Install Locally
+
+Clone this repo and run:
+
+```bash
+mvn clean install
+````
+
+This will install the archetype into your local Maven repository (`~/.m2/repository`).
+
+---
+
+## ☁️ Deploy to Private Maven Repository
+
+TBC
+
+---
+
+## 🛠 Using the Archetype
+
+From any empty directory, run:
+
+```bash
+mvn archetype:generate \
+  -DarchetypeGroupId=com.mission.archetypes \
+  -DarchetypeArtifactId=spring-boot-rest-poc-archetype \
+  -DarchetypeVersion=1.0.0-SNAPSHOT \
+  -DgroupId=com.mission \
+  -DartifactId=demo-rest \
+  -Dversion=0.1.0-SNAPSHOT \
+  -Dpackage=com.mission.demo \
+  -DendpointName=Status \
+  -DendpointPath=/status \
+  -Dmessage="OK from demo-rest" \
+  -DinteractiveMode=false
+```
+
+This will generate a project like:
+
+```
+demo-rest/
+ ├─ pom.xml
+ ├─ src/main/java/com/mission/demo/Application.java
+ ├─ src/main/java/com/mission/demo/web/StatusController.java
+ └─ src/main/resources/application.properties
+```
+
+---
+
+## ▶️ Run the Generated Project
+
+```bash
+cd demo-rest
+mvn spring-boot:run
+```
+
+Visit [http://localhost:8080/status](http://localhost:8080/status) → `OK from demo-rest`
+
+---
+
+## 🔧 Custom Parameters
+
+| Property       | Default value               | Description                                |
+| -------------- | --------------------------- | ------------------------------------------ |
+| `groupId`      | —                           | Maven groupId for your new project         |
+| `artifactId`   | —                           | Maven artifactId for your new project      |
+| `version`      | `1.0.0-SNAPSHOT`            | Initial project version                    |
+| `package`      | `com.example.demo`          | Base package name                          |
+| `endpointName` | `Hello`                     | Controller class name (PascalCase)         |
+| `endpointPath` | `/hello`                    | REST endpoint path                         |
+| `message`      | `Hello from ${artifactId}!` | Response message from the example endpoint |
+
+---
+
+## 📂 Repo Structure
+
+```
+spring-boot-rest-poc-archetype/
+ ├─ pom.xml                          # archetype definition (packaging=maven-archetype)
+ └─ src/main/resources/
+    ├─ META-INF/maven/archetype-metadata.xml
+    └─ archetype-resources/
+       ├─ pom.xml
+       ├─ src/main/java/${package}/Application.java
+       ├─ src/main/java/${package}/web/__endpointName__Controller.java
+       └─ src/main/resources/application.properties
+```
+
+---
+
+## 🔮 Next Steps
+
+* Add more archetypes for different service types (GraphQL, Kafka consumer, etc.)
+* Integrate this repo with a **GitLab pipeline** to auto-deploy SNAPSHOTs and tagged releases
+* Maintain an `archetype-catalog.xml` in your repo manager for easier discovery
+
+```
